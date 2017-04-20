@@ -8,6 +8,7 @@ from reportlab.lib.pagesizes import A4
 
 import sys;
 import math;
+import argparse;
 
 # These variables (actually only the first) are used to
 # align some objects in the page, for instance, center
@@ -281,95 +282,94 @@ def getArgStr(name, args):
         sys.exit(1);
 
 
-#def characterSheet():
-#    # Create a new canvas object to draw into
-#    canvas = canvas.Canvas("worksheet.pdf", pagesize=A4, bottomup=0);
-#
-#    # Register STSong as a font. We'll use it for chinese writing 
-#    pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
-#
-#    # Draw header information. Name and worksheet name
-#    drawOpening(canvas);
-#
-#    # Where (y-coordinate) to start writing the rows and
-#    # by how much each line should be spaced for among 
-#    # themselves (vertically).
-#    vertPosition = firstPageVertPosStart;
-#
-#    # Counter for the index of current page and number of rows
-#    # in current page.
-#    pageCounter = 1;
-#    rowCounter = 0;
-#
-#    # Read all content of the file into a list
-#    rows = tuple(open("input.txt"));
-#
-#    # Draw first page's footer  
-#    drawFooter(canvas, pageCounter, numPages(len(rows)));
-#
-#    # Iterate over all lines from input file
-#    for line in rows:
-#        # Extract the pinyin and the character apart
-#        parts = line.split();
-#
-#        # Where (x-coordinate) to start writing the rows and
-#        # by how much each line should be spaced for among 
-#        # themselves (horizontally).
-#        horPosition = horPositionStart;
-#
-#        # Draw one entire row of characters. One at a time.
-#        for ind in range(0, 11):
-#            # Each column gets progressively opaque, the little
-#            # math below is for linearly increasing the chracter
-#            # opacity. Furthermore, opacity cannot be lower than
-#            # zero, therefore we take care of that too.
-#            alpha = 1.0 - ind/10;
-#            canvas.setFillAlpha(alpha if (alpha >= 0) else 0);
-#
-#            # Draw one single characters
-#            drawCharacterBox(canvas, (horPosition, vertPosition), parts[0], parts[1]);
-#
-#            # Increment in horizontal offset for the next character 
-#            # box
-#            horPosition += horIncrement;
-#
-#        # Increment in horizontal offset for the next character 
-#        # box
-#        vertPosition += vertIncrement;
-#
-#        # Account for the just written character row
-#        rowCounter += 1;
-#
-#        # If the bottom of the page was reached, i.e., the maximum number of
-#        # rows per page, we create a new page to draw into and reset vertical
-#        # offsets.
-#        if (rowCounter % currMaxRowPerPage == 0):
-#            # Make the just filled page to show up and start a new one
-#            canvas.showPage();
-#
-#            pageCounter += 1;
-#            rowCounter = 0;
-#            currMaxRowPerPage = MaxRowsInnerPages;
-#            vertPosition = innerPagesVertPosStart;
-#
-#            # Draw a footer on the recently created page
-#            drawFooter(canvas, pageCounter, numPages(len(rows)));
-#
-#    # Save PDF to file
-#    canvas.save()
-
-
-
-# Main entry point for the program when being executed from command line
-if __name__ == '__main__':
+def characterSheet():
     # Create a new canvas object to draw into
-    canvas = canvas.Canvas("worksheet.pdf", pagesize=A4, bottomup=0);
+    canv = canvas.Canvas("worksheet.pdf", pagesize=A4, bottomup=0);
+
+    # Register STSong as a font. We'll use it for chinese writing 
+    pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
+
+    # Draw header information. Name and worksheet name
+    drawOpening(canv, "汉字练习纸", "Chinese Character Writing Sheet");
+
+    # Where (y-coordinate) to start writing the rows and
+    # by how much each line should be spaced for among 
+    # themselves (vertically).
+    vertPosition = firstPageVertPosStart;
+
+    # Counter for the index of current page and number of rows
+    # in current page.
+    pageCounter = 1;
+    rowCounter = 0;
+
+    # Read all content of the file into a list
+    rows = tuple(open("input.txt"));
+
+    # Draw first page's footer  
+    drawFooter(canv, pageCounter, numPages(len(rows)));
+
+    # Iterate over all lines from input file
+    for line in rows:
+        # Extract the pinyin and the character apart
+        parts = line.split();
+
+        # Where (x-coordinate) to start writing the rows and
+        # by how much each line should be spaced for among 
+        # themselves (horizontally).
+        horPosition = horPositionStart;
+
+        # Draw one entire row of characters. One at a time.
+        for ind in range(0, 11):
+            # Each column gets progressively opaque, the little
+            # math below is for linearly increasing the chracter
+            # opacity. Furthermore, opacity cannot be lower than
+            # zero, therefore we take care of that too.
+            alpha = 1.0 - ind/10;
+            canv.setFillAlpha(alpha if (alpha >= 0) else 0);
+
+            # Draw one single characters
+            drawCharacterBox(canv, (horPosition, vertPosition), parts[0], parts[1]);
+
+            # Increment in horizontal offset for the next character 
+            # box
+            horPosition += horIncrement;
+
+        # Increment in horizontal offset for the next character 
+        # box
+        vertPosition += vertIncrement;
+
+        # Account for the just written character row
+        rowCounter += 1;
+
+        # If the bottom of the page was reached, i.e., the maximum number of
+        # rows per page, we create a new page to draw into and reset vertical
+        # offsets.
+        if (rowCounter % currMaxRowPerPage == 0):
+            # Make the just filled page to show up and start a new one
+            canv.showPage();
+
+            pageCounter += 1;
+            rowCounter = 0;
+            currMaxRowPerPage = MaxRowsInnerPages;
+            vertPosition = innerPagesVertPosStart;
+
+            # Draw a footer on the recently created page
+            drawFooter(canv, pageCounter, numPages(len(rows)));
+
+    # Save PDF to file
+    canv.save();
+
+
+
+def phraseSheet():
+    # Create a new canvas object to draw into
+    canv = canvas.Canvas("worksheet.pdf", pagesize=A4, bottomup=0);
 
     # Register STSong as a font. We'll use it for chinese writing 
     pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
     
     # Draw header information. Name and worksheet name
-    drawOpening(canvas, "汉字练习纸", "Chinese Phrase Writing Sheet");
+    drawOpening(canv, "汉字练习纸", "Chinese Phrase Writing Sheet");
 
     # Where (y-coordinate) to start writing the rows and
     # by how much each line should be spaced for among 
@@ -386,7 +386,7 @@ if __name__ == '__main__':
     rows = tuple(fp);
 
     # Draw first page's footer  
-    drawFooter(canvas, pageCounter, numPages(len(rows)));
+    drawFooter(canv, pageCounter, numPages(len(rows)));
 
     # Iterate over all lines of the input file.
     # lineIdx always should point to a valid verbatim phrase
@@ -402,14 +402,20 @@ if __name__ == '__main__':
             # opacity. Furthermore, opacity cannot be lower than
             # zero, therefore we take care of that too.
             alpha = 1.0 - ind/10;
-            canvas.setFillAlpha(alpha if (alpha >= 0) else 0);
+            canv.setFillAlpha(alpha if (alpha >= 0) else 0);
 
             # Draw one single phrase
-            drawPhraseBox(canvas, vertPosition, verbText, mandText);
+            drawPhraseBox(canv, vertPosition, verbText, mandText);
 
             # Increment in horizontal offset for the next character 
             # box
             vertPosition += vertIncrement;
 
     # Save PDF to file
-    canvas.save()
+    canv.save();
+
+
+
+# Main entry point for the program when being executed from command line
+if __name__ == '__main__':
+    characterSheet();
