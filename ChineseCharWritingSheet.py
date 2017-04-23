@@ -235,9 +235,9 @@ class WorkSheetGenerator:
         canv.drawPath(p);
 
 
-    def characterSheet(self):
+    def characterSheet(self, inputFileName, outputFileName):
         # Create a new canvas object to draw into
-        canv = canvas.Canvas("charWorksheet.pdf", pagesize=A4, bottomup=0);
+        canv = canvas.Canvas(outputFileName, pagesize=A4, bottomup=0);
 
         # Register STSong as a font. We'll use it for chinese writing 
         pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
@@ -256,7 +256,7 @@ class WorkSheetGenerator:
         rowCounter = 0;
 
         # Read all content of the file into a list
-        rows = tuple(open("input.txt"));
+        rows = tuple(open(inputFileName));
 
         # Draw first page's footer  
         self.drawFooter(canv, pageCounter, self.numPages(len(rows)));
@@ -314,9 +314,9 @@ class WorkSheetGenerator:
 
 
 
-    def phraseSheet(self):
+    def phraseSheet(self, inputFileName, outputFileName):
         # Create a new canvas object to draw into
-        canv = canvas.Canvas("phraseSheet.pdf", pagesize=A4, bottomup=0);
+        canv = canvas.Canvas(outputFileName, pagesize=A4, bottomup=0);
 
         # Register STSong as a font. We'll use it for chinese writing 
         pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
@@ -335,7 +335,7 @@ class WorkSheetGenerator:
         rowCounter = 0;
 
         # Read all content of the file into a list
-        fp = open("input2.txt");
+        fp = open(inputFileName, outputFileName);
         rows = tuple(fp);
 
         # Draw first page's footer  
@@ -371,7 +371,20 @@ class WorkSheetGenerator:
 
 # Main entry point for the program when being executed from command line
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser();
     wsg = WorkSheetGenerator();
 
-    wsg.phraseSheet();
-    wsg.characterSheet();
+    parser.add_argument('-m', '--mode', action="store", dest="mode", help="Choose sheet mode: char, word or phrase", default="empty");
+    parser.add_argument('-i', '--input', action="store", dest="inputFileName", help="Specify input file name. See docs for format.", default="input.txt");
+    parser.add_argument('-o', '--output', action="store", dest="outputFileName", help="Specify output file name.", default="output.pdf");
+
+    args = parser.parse_args();
+
+    if (args.mode == "char"):
+        wsg.characterSheet(args.inputFileName, args.outputFileName);
+    elif (args.mode == "word"):
+        print("Not implemented yet. Sorreeeeyyy.");
+    elif (args.mode == "phrase"):
+        wsg.phraseSheet(args.inputFileName, args.outputFileName);
+    else:
+        print("Please specify a valid mode.");
