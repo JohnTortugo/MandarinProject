@@ -76,7 +76,7 @@ class WorkSheetGenerator:
     def drawCharacterBox(self, canv, startPoint, pinText, charText):
         ###################################
         # Draw the pinyin outside the box
-        canv.setFontSize(11);
+        canv.setFont("HeiseiMin-W3", 11);
         canv.drawCentredString(startPoint[self.X]+self.outerWidth/2, startPoint[self.Y]-3, pinText);
 
         ###################
@@ -131,7 +131,8 @@ class WorkSheetGenerator:
     def drawPhraseBox(self, canv, vertPositionStart, pinText, charText):
         ###################################
         # Draw the pinyin outside the box
-        canv.setFont("STSong-Light", 11);
+        #canv.setFont("STSong-Light", 11);
+        canv.setFont("HeiseiMin-W3", 11);
         canv.drawString(self.horPositionStart, vertPositionStart-3, pinText);
 
         ###################
@@ -152,7 +153,8 @@ class WorkSheetGenerator:
         # Draw inner small square for each character. If the
         # character is a space just add some 'space'.
         startPoint = [self.horPositionStart, vertPositionStart];
-        for charInd in range(0, 18):
+
+        for charInd in range(0, 12):
             if (charText[charInd] != ' '):
                 p2 = canv.beginPath();
                 canv.setDash(1, 2);
@@ -240,7 +242,8 @@ class WorkSheetGenerator:
         canv = canvas.Canvas(outputFileName, pagesize=A4, bottomup=0);
 
         # Register STSong as a font. We'll use it for chinese writing 
-        pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
+        pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'));
+        pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3'));
 
         # Draw header information. Name and worksheet name
         self.drawOpening(canv, "汉字练习纸", "Chinese Character Writing Sheet");
@@ -320,6 +323,7 @@ class WorkSheetGenerator:
 
         # Register STSong as a font. We'll use it for chinese writing 
         pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
+        pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3'));
         
         # Draw header information. Name and worksheet name
         self.drawOpening(canv, "汉字练习纸", "Chinese Phrase Writing Sheet");
@@ -335,7 +339,7 @@ class WorkSheetGenerator:
         rowCounter = 0;
 
         # Read all content of the file into a list
-        fp = open(inputFileName, outputFileName);
+        fp = open(inputFileName);
         rows = tuple(fp);
 
         # Draw first page's footer  
