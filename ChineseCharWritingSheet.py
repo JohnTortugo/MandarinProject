@@ -4,6 +4,7 @@
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics;
 from reportlab.pdfbase.cidfonts import UnicodeCIDFont;
+from reportlab.pdfbase.ttfonts import TTFont;
 from reportlab.lib.pagesizes import A4
 
 import sys;
@@ -38,7 +39,7 @@ class WorkSheetGenerator:
 
     # This is how much space will be inserted when there is
     # a space in the correspondent mandarim character position
-    phraseBlankWidth = -20;
+    phraseBlankWidth = -28;
 
     # Width and height of each of the cells in the inner matrix
     # where the chinese characters are drawn
@@ -76,7 +77,7 @@ class WorkSheetGenerator:
     def drawCharacterBox(self, canv, startPoint, pinText, charText):
         ###################################
         # Draw the pinyin outside the box
-        canv.setFont("HeiseiMin-W3", 11);
+        canv.setFont("Merriweather-Bold", 11);
         canv.drawCentredString(startPoint[self.X]+self.outerWidth/2, startPoint[self.Y]-3, pinText);
 
         ###################
@@ -131,8 +132,7 @@ class WorkSheetGenerator:
     def drawPhraseBox(self, canv, vertPositionStart, pinText, charText):
         ###################################
         # Draw the pinyin outside the box
-        #canv.setFont("STSong-Light", 11);
-        canv.setFont("HeiseiMin-W3", 11);
+        canv.setFont("Merriweather-Bold", 11);
         canv.drawString(self.horPositionStart, vertPositionStart-3, pinText);
 
         ###################
@@ -154,7 +154,12 @@ class WorkSheetGenerator:
         # character is a space just add some 'space'.
         startPoint = [self.horPositionStart, vertPositionStart];
 
-        for charInd in range(0, 12):
+        for charInd in range(0, len(charText)):
+            # Check if we didn't overflow the right margin
+            if (startPoint[self.X] + self.outerWidth > self.horPositionStart + self.phraseOuterBoxWidth):
+                print("Phrase is too long. Would overflow right margin. %d characters too long." % (len(charText) - charInd));
+                break;
+
             if (charText[charInd] != ' '):
                 p2 = canv.beginPath();
                 canv.setDash(1, 2);
@@ -187,9 +192,9 @@ class WorkSheetGenerator:
             else:
                 startPoint[self.X] += self.phraseBlankWidth;
 
-            # Increment in horizontal offset for the next character 
-            # box
+            # Increment in horizontal offset for the next character box
             startPoint[self.X] += self.outerWidth - self.phraseInnerPadding;
+
 
 
 
@@ -243,7 +248,7 @@ class WorkSheetGenerator:
 
         # Register STSong as a font. We'll use it for chinese writing 
         pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'));
-        pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3'));
+        pdfmetrics.registerFont(TTFont('Merriweather-Bold', "Merriweather-Bold.ttf"));
 
         # Draw header information. Name and worksheet name
         self.drawOpening(canv, "汉字练习纸", "Chinese Character Writing Sheet");
@@ -323,7 +328,7 @@ class WorkSheetGenerator:
 
         # Register STSong as a font. We'll use it for chinese writing 
         pdfmetrics.registerFont(UnicodeCIDFont('STSong-Light'))
-        pdfmetrics.registerFont(UnicodeCIDFont('HeiseiMin-W3'));
+        pdfmetrics.registerFont(TTFont('Merriweather-Bold', "Merriweather-Bold.ttf"));
         
         # Draw header information. Name and worksheet name
         self.drawOpening(canv, "汉字练习纸", "Chinese Phrase Writing Sheet");
@@ -336,24 +341,27 @@ class WorkSheetGenerator:
         # Counter for the index of current page and number of rows
         # in current page.
         pageCounter = 1;
-        rowCounter = 0;
+
+        # Number of phrase rows/boxes to be drawn on the current page.
+        # This is different for first page and inner pages.
+        currMaxRowPerPage = self.MaxRowsFirstPage;
 
         # Read all content of the file into a list
         fp = open(inputFileName);
         rows = tuple(fp);
 
         # Draw first page's footer  
-        self.drawFooter(canv, pageCounter, self.numPages(len(rows)));
+        self.drawFooter(canv, pageCounter, len(rows) / 3);
 
         # Iterate over all lines of the input file.
         # lineIdx always should point to a valid verbatim phrase
         # logic inside the loop access the mandarin phrase
         for lineIdx in range(0, len(rows), 3):
-            verbText = rows[lineIdx];
-            mandText = rows[lineIdx + 1];
+            verbText = rows[lineIdx][:-1];
+            mandText = rows[lineIdx + 1][:-1];
 
             # Draw one entire phrase. One at a time.
-            for ind in range(0, 10):
+            for ind in range(0, currMaxRowPerPage):
                 # Each column gets progressively opaque, the little
                 # math below is for linearly increasing the chracter
                 # opacity. Furthermore, opacity cannot be lower than
@@ -367,6 +375,18 @@ class WorkSheetGenerator:
                 # Increment in horizontal offset for the next character 
                 # box
                 vertPosition += self.vertIncrement;
+
+            # If we did not create pages for all phrases we add a new page
+            if ((lineIdx + 3) != len(rows)):
+                # Make the just filled page to show up and start a new one
+                canv.showPage();
+
+                pageCounter += 1;
+                currMaxRowPerPage = self.MaxRowsInnerPages;
+                vertPosition = self.innerPagesVertPosStart;
+
+                # Draw a footer on the recently created page
+                self.drawFooter(canv, pageCounter, len(rows) / 3);
 
         # Save PDF to file
         canv.save();
